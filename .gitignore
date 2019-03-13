@@ -6,4 +6,4 @@ logs/
 .mvn/
 mvnw
 mvnw.cmd
-
+*.exe
