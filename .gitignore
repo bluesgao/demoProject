@@ -7,3 +7,7 @@ logs/
 mvnw
 mvnw.cmd
 *.exe
+
+bin/
+pkg/
+vendor/

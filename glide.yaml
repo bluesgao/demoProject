@@ -1,0 +1,21 @@
+package: demoProject
+license: MIT
+owners:
+  - name: bluesgao
+    email: bluesgao@126.com
+
+# 去除包
+ignore:
+  - appengine
+  - golang.org/x/net
+
+# 排除目录
+excludeDirs:
+  - node_modules
+
+# 导入包
+import:
+  - package:  github.com/astaxie/beego
+  - package:  github.com/go-sql-driver/mysql
+  - package:  github.com/bitly/go-simplejson
+

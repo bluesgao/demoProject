@@ -1,0 +1,10 @@
+hash: fa6ff959ab4b3c3702f0db04174b90310ec8354d761548c234bd3b4e500c0731
+updated: 2019-03-14T13:48:03.7553398+08:00
+imports:
+- name: github.com/astaxie/beego
+  version: c2b6cb5c3a7fe4a288d4faa88e820aa65804826d
+- name: github.com/bitly/go-simplejson
+  version: 9db4a59bd4d803ae0c173a7d8a538e056cd59d57
+- name: github.com/go-sql-driver/mysql
+  version: 2c9d54fefcfb443251f5b92cd5106cf4dc07b880
+testImports: []
