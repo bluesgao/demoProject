@@ -1,7 +1,7 @@
 package test
 
 import (
-	"demoProject/src/vertex"
+	"petmate/src/vertex"
 	"testing"
 )
 
