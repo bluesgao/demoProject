@@ -18,4 +18,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190130090550-b01c7a725664 // indirect
 	golang.org/x/sync v0.0.0 // indirect
 	golang.org/x/text v0.0.0 // indirect
+	goroutines.com/asm-add v0.0.0-20160203000000-cce53e820d48 // indirect
 )
