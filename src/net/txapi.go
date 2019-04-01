@@ -45,7 +45,7 @@ func main() {
 	get()
 }
 
-func setReqUrlParams(req *http.Request)  {
+func setReqUrlParams(req *http.Request) {
 	query := req.URL.Query()
 	query.Add("api_version", "3.0")
 
@@ -91,10 +91,9 @@ func setReqUrlParams(req *http.Request)  {
 	log.Println("device json:", string(deviceb))
 	query.Add("device", string(deviceb))
 
-
-	network:=NetWork{
-		ConnectType:1,
-		Carrier:3}
+	network := NetWork{
+		ConnectType: 1,
+		Carrier:     3}
 
 	networkb, networkerr := json.Marshal(network)
 	if networkerr != nil {

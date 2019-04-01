@@ -180,7 +180,7 @@ func GetHowieArray() (data []interface{}) {
 	var i int64
 	for i = 0; i <= 10; i++ {
 		data = append(data, Howie{
-			Name:       fmt.Sprintf("howie_%d", i+1),
+			Name:       fmt.Sprintf("bluesgao_%d", i+1),
 			Pwd:        fmt.Sprintf("pwd_%d", i+1),
 			Age:        i + 10,
 			CreateTime: i + 1,

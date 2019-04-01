@@ -13,9 +13,6 @@ type Req struct {
 	Passwd string `json:"passwd"`
 }
 
-
-
-
 func main() {
 	//get()
 	//post()
@@ -41,7 +38,7 @@ func get2() {
 	req.AddCookie(&cookie)
 
 	//设置get请求行参数
-	query:=req.URL.Query()
+	query := req.URL.Query()
 	query.Add("api_version", "3.0")
 
 	req.URL.RawQuery = query.Encode()
