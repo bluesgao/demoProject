@@ -1,29 +1,36 @@
 package executor
 
-import "sync/atomic"
+import "log"
 
 type Worker struct {
-	pool     *Pool
-	taskChan chan Task
+	pool     *WorkerPool
+	taskChan chan T
 }
 
 func (w *Worker) run() {
 	go func() {
+		//异常处理
+		defer func() {
+			if p := recover(); p != nil {
+				w.pool.decrRunnings()
+				log.Printf("worker exits from a panic: %v", p)
+			}
+		}()
 		for t := range w.taskChan {
 			if t == nil {
-				//将忙碌worker数量减1
-				atomic.AddInt32(&w.pool.busy, -1)
+				//将运行中worker数量减1
+				w.pool.decrRunnings()
 				return
 			}
 
 			//执行task
 			t()
 			//将worker归还到pool中
-			w.pool.putWorker(w)
+			w.pool.returnWorker(w)
 		}
 	}()
 }
 
-func (w *Worker) addTask(t Task) {
+func (w *Worker) addTask(t T) {
 	w.taskChan <- t
 }

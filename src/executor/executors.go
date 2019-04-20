@@ -2,14 +2,14 @@ package executor
 
 const DEFAULT_POOL_SIZE = 4
 
-var defaultExecutors = NewPool(DEFAULT_POOL_SIZE)
+var defaultExecutors = NewWorkerPool(DEFAULT_POOL_SIZE)
 
-func Submit(t Task) {
+func Submit(t T) {
 	defaultExecutors.Execute(t)
 }
 
-func Busy() int {
-	return defaultExecutors.GetBusy()
+func Runnings() int {
+	return defaultExecutors.GetRunnings()
 }
 
 func Capacity() int {
