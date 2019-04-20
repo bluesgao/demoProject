@@ -2,20 +2,21 @@ package main
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 	"sync"
 	"sync/atomic"
 )
 
 var value int64
 
-func worker(wg *sync.WaitGroup)  {
+func worker(wg *sync.WaitGroup) {
 	defer wg.Done()
-	for i:=0;i<100000 ;i++  {
+	for i := 0; i < 100000; i++ {
 		atomic.AddInt64(&value, 1)
 	}
 }
 
-func main()  {
+func main() {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
@@ -26,4 +27,6 @@ func main()  {
 	wg.Wait()
 
 	fmt.Println(value)
+
+	fmt.Println(uuid.NewV4())
 }

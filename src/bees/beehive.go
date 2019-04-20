@@ -54,6 +54,12 @@ func (beehive *Beehive) ShutDown() {
 	})
 }
 
+func (beehive *Beehive) purge(){
+	go func() {
+
+	}()
+}
+
 //beehive容量
 func (beehive *Beehive) GetCapacity() int {
 	return int(atomic.LoadInt32(&beehive.coreSize))
