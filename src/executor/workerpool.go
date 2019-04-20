@@ -22,6 +22,7 @@ type WorkerPool struct {
 	destroy     chan bool
 	mutex       sync.Mutex
 	once        sync.Once
+	taskQue     chan T //任务队列
 }
 
 //新建
@@ -29,6 +30,7 @@ func NewWorkerPool(size int) *WorkerPool {
 	p := WorkerPool{
 		capacity: int32(size),
 		destroy:  make(chan bool),
+		taskQue:  make(chan T, 8),
 	}
 	return &p
 }
@@ -67,11 +69,20 @@ func (p *WorkerPool) GetCapacity() int {
 	return int(atomic.LoadInt32(&p.capacity))
 }
 
-//执行任务
-func (p *WorkerPool) Execute(task T) {
+//提交任务
+func (p *WorkerPool) SubmitTask(t T) {
+	log.Printf("向workerPool提交任务 %+v \n", p)
+
 	w := p.borrowWorker()
 	if w != nil {
-		w.addTask(task)
+		w.addTask(t)
+	} else {
+		if p.runnings >= p.capacity {
+			log.Printf("将task 缓存到 taskque中 %+v \n", p)
+			// 将task 缓存到 taskque中
+			p.taskQue <- t
+		}
+
 	}
 }
 
@@ -84,25 +95,19 @@ func (p *WorkerPool) borrowWorker() *Worker {
 	//从 idleWorkers 中取出一个worker，如果 idleWorkers 为空，则新建一个worker
 	if n <= 0 { //小于等于0，新建
 		log.Printf("小于等于0，新建worker %+v \n", p)
-		if p.runnings >= p.capacity {
-			//todo 执行task拒绝策略
-			log.Printf("执行task拒绝策略 %+v \n", p)
-		} else {
-			log.Printf("新建worker %+v \n", p)
-			//新建worker
-			w = &Worker{
-				pool:     p,
-				taskChan: make(chan T),
-			}
-			w.run()
-			//将运行中的woker数量加1
-			p.incrRunnings()
+		//新建worker
+		w = &Worker{
+			pool:     p,
+			taskChan: make(chan T),
 		}
+		w.run()
+		//将运行中的woker数量加1
+		p.incrRunnings()
 	} else { //大于0，取尾部
 		log.Printf("大于0，取尾部 %+v \n", p)
-		w = workers[n]
+		w = workers[n-1]
 		workers[n] = nil
-		p.idleWorkers = workers[:n]
+		p.idleWorkers = workers[:n-1]
 	}
 	p.mutex.Unlock()
 	log.Printf("borrowWorker %+v \n", w)

@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var n = 40
+var n = 3
 
 func TestSubmit(t *testing.T) {
 	var wg sync.WaitGroup
@@ -22,8 +22,10 @@ func TestSubmit(t *testing.T) {
 
 	wg.Wait()
 
-	t.Logf("running workers number:%d", defaultExecutors.GetBusy())
+	t.Logf("running workers number:%d", defaultExecutors.GetRunnings())
 	mem := runtime.MemStats{}
 	runtime.ReadMemStats(&mem)
 	t.Logf("memory usage:%d", mem.TotalAlloc/1024)
+
+	defaultExecutors.ShutDown()
 }

@@ -16,6 +16,13 @@ func (w *Worker) run() {
 				log.Printf("worker exits from a panic: %v", p)
 			}
 		}()
+
+		if len(w.pool.taskQue) > 0 {
+			for t := range w.pool.taskQue {
+				t()
+			}
+		}
+
 		for t := range w.taskChan {
 			if t == nil {
 				//将运行中worker数量减1
@@ -24,6 +31,7 @@ func (w *Worker) run() {
 			}
 
 			//执行task
+			log.Printf("执行task: %v", w)
 			t()
 			//将worker归还到pool中
 			w.pool.returnWorker(w)
