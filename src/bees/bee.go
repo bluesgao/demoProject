@@ -7,8 +7,18 @@ import (
 
 type Bee struct {
 	beehive *Beehive
-	id      int32  //编号
-	taskQue chan T //任务队列
+	id      int32     //编号
+	taskQue chan T    //任务队列
+	quit    chan bool //bee退出标志
+}
+
+func NewBee(beeId int32, beehive *Beehive) *Bee {
+	b := Bee{
+		id:      beeId,
+		beehive: beehive,
+		taskQue: make(chan T, beehive.taskqueSize),
+	}
+	return &b
 }
 
 func (b *Bee) do() {
@@ -21,21 +31,25 @@ func (b *Bee) do() {
 			}
 		}()
 
-		for t := range b.taskQue {
-			if t == nil {
-				log.Printf("bee%d任务处理完成，需要给beehive发送任务完成通知 \n", b.id)
-				atomic.AddInt32(&b.beehive.runnings, -1) //将运行中worker数量减1
-				//todo bee任务处理完成，需要给beehive发送任务完成通知
-				return
+		for {
+			select {
+			case t := <-b.taskQue:
+				log.Printf("bee%d执行task开始:%+v \n", b.id, b)
+				t() //执行task
+				log.Printf("bee%d执行task结束:%+v \n", b.id, b)
+			case <-b.quit:
+				return // we have received a signal to stop
 			}
-
-			log.Printf("bee%d执行task开始:%+v \n", b.id, b)
-			t() //执行task
-			log.Printf("bee%d执行task结束:%+v \n", b.id, b)
 		}
 	}()
 }
 
 func (b *Bee) addTask(t T) {
 	b.taskQue <- t
+}
+
+func (b *Bee) Quit() {
+	go func() {
+		b.quit <- true
+	}()
 }

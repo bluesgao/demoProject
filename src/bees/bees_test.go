@@ -5,24 +5,30 @@ import (
 	"runtime"
 	"sync"
 	"testing"
-	"time"
 )
 
-var n = 1000
+/**
+    go		task	speed(s)
+    10		1000	1.05
+    20		10000   2.34
+	50		10000   3.15
+	100		10000   4.59
+*/
+
+var n = 10000
 
 func TestSubmit(t *testing.T) {
 	var wg sync.WaitGroup
 	for i := 0; i < n; i++ {
 		wg.Add(1)
-		Submit(func() {
-			log.Printf("hello task %d \n", i)
-			time.Sleep(time.Millisecond)
+		defaultBees.SubmitTask(func() {
+			log.Printf("hello task")
+			//time.Sleep(time.Millisecond)
 			wg.Done()
 		})
 	}
 
 	wg.Wait()
-	time.Sleep(time.Second * 3)
 
 	t.Logf("defaultBees:%+v", defaultBees)
 
@@ -31,5 +37,23 @@ func TestSubmit(t *testing.T) {
 	runtime.ReadMemStats(&mem)
 	t.Logf("memory usage:%d", mem.TotalAlloc/1024)
 
+	//time.Sleep(time.Second * 3)
 	defaultBees.ShutDown()
+}
+
+func TestNomal(t *testing.T) {
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func() {
+			log.Printf("hello task %d \n", i)
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	mem := runtime.MemStats{}
+	runtime.ReadMemStats(&mem)
+	t.Logf("memory usage:%d", mem.TotalAlloc/1024)
+
 }
