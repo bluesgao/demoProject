@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 type T func()
@@ -36,7 +37,7 @@ func NewBeehive(coreSize int, taskqueSize int) *Beehive {
 		//将bee添加到bees中
 		beehive.bees = append(beehive.bees, b)
 	}*/
-
+	go beehive.purge() //防止go runtime系统报deadlock异常
 	return &beehive
 }
 
@@ -54,10 +55,15 @@ func (beehive *Beehive) ShutDown() {
 	})
 }
 
-func (beehive *Beehive) purge(){
-	go func() {
+func (beehive *Beehive) purge() {
+	ticker := time.NewTicker(time.Second * 3)
+	for t := range ticker.C {
+		log.Printf("purge time:%+v \n", t)
+		//todo 判断bees是否为0，runnings是否为0
 
-	}()
+		//todo 判断bee中的taskque是否为0
+	}
+	defer ticker.Stop()
 }
 
 //beehive容量

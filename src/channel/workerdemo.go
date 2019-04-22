@@ -15,14 +15,14 @@ type Job struct {
 type Worker struct {
 	WorkerId string    //工人id
 	JobPool  chan Job  //任务队列
-	exit chan bool //退出chan
+	exit     chan bool //退出chan
 }
 
 func NewWorker(wid string, jq chan Job) Worker {
 	w := Worker{
 		WorkerId: wid,
 		JobPool:  jq,
-		exit: make(chan bool),
+		exit:     make(chan bool),
 	}
 
 	return w
