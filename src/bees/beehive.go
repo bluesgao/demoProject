@@ -49,7 +49,7 @@ func (beehive *BeeHive) Destroy() {
 		atomic.StoreInt32(&beehive.destroy, 1) //将关闭标志置为1
 		log.Printf("Destroy %+v \n", beehive)
 		beehive.mutex.Lock()
-		//将所有闲置的bee置为空
+		//让所有的bee退出
 		for i, b := range beehive.workerBees {
 			b.fire()
 			beehive.workerBees[i] = nil
