@@ -18,21 +18,21 @@ type BeeHive struct {
 	mutex         sync.Mutex
 	once          sync.Once
 	destroy       int32 //关闭标志
-	startBeeId    int32 //bee起始工号
+	workerNo      int32 //起始工号
 }
 
 //新建
-func NewBeehive(coreSize int, taskQueueSize int, lazy bool) *BeeHive {
+func NewBeeHive(coreSize int, taskQueueSize int, lazy bool) *BeeHive {
 	beehive := BeeHive{
 		coreSize:      int32(coreSize),
 		taskQueueSize: int32(taskQueueSize),
-		startBeeId:    -1,
+		workerNo:      0,
 	}
 
 	if lazy == false {
 		for i := 0; i < coreSize; i++ {
 			//新建bee
-			b := NewWorkerBee(atomic.AddInt32(&beehive.startBeeId, 1), &beehive)
+			b := NewWorkerBee(atomic.AddInt32(&beehive.workerNo, 1), &beehive)
 			//将运行中的bee数量加1
 			atomic.AddInt32(&beehive.runnings, 1)
 			//将bee添加到bees中
@@ -60,7 +60,7 @@ func (beehive *BeeHive) Destroy() {
 }
 
 //beehive容量
-func (beehive *BeeHive) GetCapacity() int {
+func (beehive *BeeHive) Capacity() int {
 	return int(atomic.LoadInt32(&beehive.coreSize))
 }
 
@@ -122,7 +122,7 @@ func (beehive *BeeHive) assignTask(t T) {
 	if n <= 0 || n < int(beehive.coreSize) { //小于等于0，新建
 		log.Printf("新建bee %+v \n", beehive)
 		//新建bee
-		bee = NewWorkerBee(atomic.AddInt32(&beehive.startBeeId, 1), beehive)
+		bee = NewWorkerBee(atomic.AddInt32(&beehive.workerNo, 1), beehive)
 		//将运行中的bee数量加1
 		atomic.AddInt32(&beehive.runnings, 1)
 		//将bee添加到bees中
@@ -134,7 +134,7 @@ func (beehive *BeeHive) assignTask(t T) {
 		bee = beehive.workerBees[rand.Intn(n)]
 	}
 	beehive.mutex.Unlock()
-	log.Printf("选定bee%d, tasksize:%d ,%+v, \n", bee.id, len(bee.taskQueue), bee)
+	log.Printf("选定bee%d, tasksize:%d ,%+v, \n", bee.no, len(bee.taskQueue), bee)
 
 	bee.addTask(t) //将任务分配给选定的bee
 	bee.do()       //bee开始干活
