@@ -75,6 +75,8 @@ func (beehive *Beehive) purge() {
 			if l <= 0 {
 				log.Printf("idleBee:%+v被清理\n", idleBees[n])
 				beehive.bees = idleBees[n+1:]
+				//运行中的bee数量减一
+				atomic.AddInt32(&beehive.runnings, -1)
 			}
 		}
 		beehive.mutex.Unlock()
