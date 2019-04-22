@@ -25,7 +25,7 @@ func BenchmarkBees(b *testing.B) {
 		wg.Wait()
 	}
 	b.StopTimer()
-	defaultBees.ShutDown()
+	defaultBees.Destroy()
 }
 
 //BenchmarkGoroutine-4   	         10000	    156630 ns/op

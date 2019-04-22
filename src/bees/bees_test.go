@@ -33,13 +33,13 @@ func TestSubmit(t *testing.T) {
 
 	t.Logf("defaultBees:%+v", defaultBees)
 
-	t.Logf("running bees number:%d", defaultBees.GetCapacity())
+	t.Logf("running workerBees number:%d", defaultBees.GetCapacity())
 	mem := runtime.MemStats{}
 	runtime.ReadMemStats(&mem)
 	t.Logf("memory usage:%d", mem.TotalAlloc/1024)
 
 	time.Sleep(time.Second * 30)
-	defaultBees.ShutDown()
+	defaultBees.Destroy()
 }
 
 func TestNomal(t *testing.T) {
