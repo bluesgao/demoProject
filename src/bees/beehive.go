@@ -48,14 +48,14 @@ func (beehive *BeeHive) Destroy() {
 	beehive.once.Do(func() {
 		atomic.StoreInt32(&beehive.destroy, 1) //将关闭标志置为1
 		log.Printf("Destroy %+v \n", beehive)
-		beehive.mutex.Lock()
+		/*beehive.mutex.Lock()
 		//让所有的bee退出
 		for i, b := range beehive.workerBees {
 			b.fire()
 			beehive.workerBees[i] = nil
 		}
 		beehive.workerBees = nil
-		beehive.mutex.Unlock()
+		beehive.mutex.Unlock()*/
 	})
 }
 
@@ -76,9 +76,6 @@ func (beehive *BeeHive) purge() {
 	defer ticker.Stop()
 	for t := range ticker.C {
 		log.Printf("purge time:%+v , beehive:%+v \n", t, beehive)
-		if 1 == atomic.LoadInt32(&beehive.destroy) {
-			break
-		}
 
 		beehive.mutex.Lock()
 
@@ -98,15 +95,21 @@ func (beehive *BeeHive) purge() {
 			}
 		}
 
-		var newBees []*WorkerBee
+		var busyBees []*WorkerBee
 		//将 workerBees=nil的删除
 		for ii, ib := range idleBees {
 			if ib != nil {
-				newBees = append(newBees, idleBees[ii])
+				busyBees = append(busyBees, idleBees[ii])
 			}
 		}
 		log.Printf("清理后 idleBees:%+v\n", beehive.workerBees)
-		beehive.workerBees = newBees
+		beehive.workerBees = busyBees
+		if len(busyBees) <= 0 { //如果没有在工作的bee，且destory标志为1，purge线程退出
+			if 1 == atomic.LoadInt32(&beehive.destroy) {
+				beehive.mutex.Unlock() //先解锁再退出
+				break
+			}
+		}
 
 		beehive.mutex.Unlock()
 	}
