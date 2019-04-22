@@ -11,8 +11,8 @@ import (
 type T func()
 
 type Beehive struct {
-	coreSize    int32 //基本bee数量
-	maxSize     int32 //最大bee数量
+	coreSize int32 //基本bee数量
+	//maxSize     int32 //最大bee数量
 	runnings    int32 //运行中的bee数量
 	taskqueSize int32 //任务队列大小
 	bees        []*Bee
@@ -55,13 +55,29 @@ func (beehive *Beehive) ShutDown() {
 	})
 }
 
+//定时清理idleBee
 func (beehive *Beehive) purge() {
 	ticker := time.NewTicker(time.Second * 3)
 	for t := range ticker.C {
 		log.Printf("purge time:%+v \n", t)
-		//todo 判断bees是否为0，runnings是否为0
 
+		beehive.mutex.Lock()
+		//todo 判断bees是否为0，runnings是否为0
+		if len(beehive.bees) <= 0 && beehive.runnings <= 0 {
+			break
+		}
 		//todo 判断bee中的taskque是否为0
+		idleBees := beehive.bees
+		n := 0
+		for i, b := range idleBees {
+			l := len(b.taskQue)
+			n = i
+			if l <= 0 {
+				log.Printf("idleBee:%+v被清理\n", idleBees[n])
+				beehive.bees = idleBees[n+1:]
+			}
+		}
+		beehive.mutex.Unlock()
 	}
 	defer ticker.Stop()
 }

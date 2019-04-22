@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	RunTimes = 1000
+	RunTimes = 10
 )
 
 func task() {
