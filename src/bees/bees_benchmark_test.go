@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	RunTimes = 10000
+	RunTimes = 100
 )
 
 func task() {
@@ -25,7 +25,7 @@ func BenchmarkBees(b *testing.B) {
 		wg.Wait()
 	}
 	b.StopTimer()
-	defer defaultBees.ShutDown()
+	defaultBees.ShutDown()
 }
 
 //BenchmarkGoroutine-4   	         10000	    156630 ns/op

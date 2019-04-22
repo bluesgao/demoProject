@@ -17,6 +17,7 @@ func NewBee(beeId int32, beehive *Beehive) *Bee {
 		id:      beeId,
 		beehive: beehive,
 		taskQue: make(chan T, beehive.taskqueSize),
+		quit:    make(chan bool),
 	}
 	return &b
 }
@@ -38,6 +39,7 @@ func (b *Bee) do() {
 				t() //执行task
 				log.Printf("bee%d执行task结束:%+v \n", b.id, b)
 			case <-b.quit:
+				log.Printf("bee%d收到退出信号:%+v \n", b.id, b)
 				return // we have received a signal to stop
 			}
 		}

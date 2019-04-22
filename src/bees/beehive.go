@@ -18,6 +18,7 @@ type Beehive struct {
 	bees        []*Bee
 	mutex       sync.Mutex
 	once        sync.Once
+	shutdown    int32 //关闭标志
 	startBeeId  int32 //bee起始编号
 }
 
@@ -44,6 +45,8 @@ func NewBeehive(coreSize int, taskqueSize int) *Beehive {
 //关闭
 func (beehive *Beehive) ShutDown() {
 	beehive.once.Do(func() {
+		atomic.StoreInt32(&beehive.shutdown, 1) //将关闭标志置为1
+		log.Printf("ShutDown %+v \n", beehive)
 		beehive.mutex.Lock()
 		//将所有闲置的bee置为空
 		for i, b := range beehive.bees {
@@ -55,35 +58,6 @@ func (beehive *Beehive) ShutDown() {
 	})
 }
 
-//定时清理idleBee
-func (beehive *Beehive) purge() {
-	ticker := time.NewTicker(time.Second * 3)
-	for t := range ticker.C {
-		log.Printf("purge time:%+v \n", t)
-
-		beehive.mutex.Lock()
-		//todo 判断bees是否为0，runnings是否为0
-		if len(beehive.bees) <= 0 && beehive.runnings <= 0 {
-			break
-		}
-		//todo 判断bee中的taskque是否为0
-		idleBees := beehive.bees
-		n := 0
-		for i, b := range idleBees {
-			l := len(b.taskQue)
-			n = i
-			if l <= 0 {
-				log.Printf("idleBee:%+v被清理\n", idleBees[n])
-				beehive.bees = idleBees[n+1:]
-				//运行中的bee数量减一
-				atomic.AddInt32(&beehive.runnings, -1)
-			}
-		}
-		beehive.mutex.Unlock()
-	}
-	defer ticker.Stop()
-}
-
 //beehive容量
 func (beehive *Beehive) GetCapacity() int {
 	return int(atomic.LoadInt32(&beehive.coreSize))
@@ -93,6 +67,53 @@ func (beehive *Beehive) GetCapacity() int {
 func (beehive *Beehive) SubmitTask(t T) {
 	log.Printf("向beehive提交任务 %+v \n", beehive)
 	beehive.assignTask(t)
+}
+
+//定时清理idleBee
+func (beehive *Beehive) purge() {
+	ticker := time.NewTicker(time.Second * 3)
+	defer ticker.Stop()
+	for t := range ticker.C {
+		log.Printf("purge time:%+v , beehive:%+v \n", t, beehive)
+		if 1 == atomic.LoadInt32(&beehive.shutdown) {
+			break
+		}
+
+		beehive.mutex.Lock()
+
+		//判断bee中的taskque是否为0
+		idleBees := beehive.bees
+		log.Printf("清理前 idleBees:%+v\n", beehive.bees)
+		for i, b := range idleBees {
+			l := len(b.taskQue)
+			if l <= 0 {
+				log.Printf("被清理 idleBee:%+v\n", idleBees[i])
+				//给bee发送quit信号，让go程退出
+				idleBees[i].Quit()
+				//运行中的bee数量减一
+				atomic.AddInt32(&beehive.runnings, -1)
+				//将需要被清理的bee从bees中删除
+				idleBees[i] = nil
+			}
+		}
+
+		var newBees []*Bee
+		//将 bees=nil的删除
+		for ii, ib := range idleBees {
+			if ib != nil {
+				newBees = append(newBees, idleBees[ii])
+			}
+		}
+		log.Printf("清理后 idleBees:%+v\n", beehive.bees)
+		beehive.bees = newBees
+
+		//判断bees是否为0，runnings是否为0
+		/*		if len(beehive.bees) <= 0 && beehive.runnings <= 0 {
+				break
+			}*/
+
+		beehive.mutex.Unlock()
+	}
 }
 
 //分配task(选择一个bee，将task分配给它)

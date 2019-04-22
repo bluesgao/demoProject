@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+	"time"
 )
 
 /**
@@ -15,7 +16,7 @@ import (
 	100		10000   4.59
 */
 
-var n = 10000
+var n = 100
 
 func TestSubmit(t *testing.T) {
 	var wg sync.WaitGroup
@@ -37,7 +38,7 @@ func TestSubmit(t *testing.T) {
 	runtime.ReadMemStats(&mem)
 	t.Logf("memory usage:%d", mem.TotalAlloc/1024)
 
-	//time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 30)
 	defaultBees.ShutDown()
 }
 
